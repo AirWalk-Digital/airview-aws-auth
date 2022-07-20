@@ -103,7 +103,50 @@ export class Authenticator {
         throw err;
       });
   }
-
+  /**
+   * Exchange authorization code for tokens.
+   * @param  {String} redirectURI Redirection URI.
+   * @param  {String} code        Authorization code.
+   * @return {Promise} Authenticated user tokens.
+   */
+  _fetchTokensFromRefresh(refreshToken) {
+    const authorization =
+      this._userPoolAppSecret &&
+      Buffer.from(`${this._userPoolAppId}:${this._userPoolAppSecret}`).toString(
+        'base64'
+      );
+    const request = {
+      url: `https://${this._userPoolDomain}/oauth2/token`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...(authorization && { Authorization: `Basic ${authorization}` }),
+      },
+      data: stringify({
+        client_id: this._userPoolAppId,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+      }),
+    } as const;
+    this._logger.debug({
+      msg: 'Fetching tokens from refresh token...',
+      request,
+    });
+    return axios
+      .request(request)
+      .then((resp) => {
+        this._logger.debug({ msg: 'Fetched tokens', tokens: resp.data });
+        return resp.data;
+      })
+      .catch((err) => {
+        this._logger.error({
+          msg: 'Unable to fetch tokens from refresh token',
+          request,
+        });
+        throw err;
+      });
+  }
+  
   /**
    * Create a Lambda@Edge redirection response to set the tokens on the user's browser cookies.
    * @param  {Object} tokens   Cognito User Pool tokens.
@@ -111,13 +154,13 @@ export class Authenticator {
    * @param  {String} location Path to redirection.
    * @return {Object} Lambda@Edge response.
    */
-  async _getRedirectResponse(tokens, domain, location) {
+  async _getRedirectResponse(tokens, domain, location, refreshToken=undefined) {
     const decoded = await this._jwtVerifier.verify(tokens.id_token);
     const username = decoded['cognito:username'];
     const usernameBase = `${this._cookieBase}.${username}`;
     const directives = (!this._disableCookieDomain) ? 
-      `Domain=${domain}; Expires=${new Date(Date.now() + this._cookieExpirationDays * 864e+5)}; Secure` :
-      `Expires=${new Date(Date.now() + this._cookieExpirationDays * 864e+5)}; Secure`;
+      `Domain=${domain}; Expires=${new Date(Date.now() + this._cookieExpirationDays * 864e+5)}; Secure; Path=/` :
+      `Expires=${new Date(Date.now() + this._cookieExpirationDays * 864e+5)}; Secure; Path=/`;
     const response = {
       status: '302' ,
       headers: {
@@ -144,7 +187,7 @@ export class Authenticator {
           },
           {
             key: 'Set-Cookie',
-            value: `${usernameBase}.refreshToken=${tokens.refresh_token}; ${directives}`,
+            value: `${usernameBase}.refreshToken=${tokens.refresh_token || refreshToken}; ${directives}`,
           },
           {
             key: 'Set-Cookie',
@@ -168,10 +211,10 @@ export class Authenticator {
    * @param  {Array}  cookies Request cookies.
    * @return {String} Extracted access token. Throw if not found.
    */
-  _getIdTokenFromCookie(cookies) {
+  _getTokenFromCookie(cookies,tokenName) {
     this._logger.debug({ msg: 'Extracting authentication token from request cookie', cookies });
     // eslint-disable-next-line no-useless-escape
-    const regex = new RegExp(`${this._userPoolAppId}\..+?\.idToken=(.*?)(?:;|$)`);
+    const regex = new RegExp(`${this._userPoolAppId}\..+?\.${tokenName}=(.*?)(?:;|$)`);
     if (cookies) {
       for (let i = 0; i < cookies.length; i++) {
         const matches = cookies[i].value.match(regex);
@@ -202,11 +245,28 @@ export class Authenticator {
     const redirectURI = `https://${cfDomain}`;
 
     try {
-      const token = this._getIdTokenFromCookie(request.headers.cookie);
+      const token = this._getTokenFromCookie(request.headers.cookie, 'idToken');
       this._logger.debug({ msg: 'Verifying token...', token });
-      const user = await this._jwtVerifier.verify(token);
-      this._logger.info({ msg: 'Forwarding request', path: request.uri, user });
-      return request;
+      try{
+	const user = await this._jwtVerifier.verify(token);
+	this._logger.info({ msg: 'Forwarding request', path: request.uri, user });
+	return request;
+      }
+      catch{
+	const refreshToken = this._getTokenFromCookie(
+          request.headers.cookie, 'refreshToken'
+        );
+        return this._fetchTokensFromRefresh(refreshToken).then((tokens) =>
+          this._getRedirectResponse(
+            tokens,
+            cfDomain,
+            request.querystring > ''
+              ? `${request.uri}?${request.querystring}`
+              : request.uri,
+            refreshToken
+          )
+        );
+      }
     } catch (err) {
       this._logger.debug("User isn't authenticated: %s", err);
       if (requestParams.code) {
