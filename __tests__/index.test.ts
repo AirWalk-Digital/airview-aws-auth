@@ -123,11 +123,23 @@ describe('private functions', () => {
       }],"idToken"),
     ).toBe(tokenData.id_token);
   });
+  
+  test('should getRefreshTokenFromCookie', () => {
+    const appClientName = 'toto,./;;..-_lol123';
+    expect(
+      authenticator._getTokenFromCookie([{
+        key: 'Cookie',
+        value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.refreshToken=${tokenData.refresh_token}; CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.idToken=${tokenData.id_token}; CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.idToken=${tokenData.id_token}; CognitoIdentityServiceProvider.5ukasw8840tap1g1i1617jh8pi.${appClientName}.idToken=wrong;`,
+      }], "refreshToken"),
+    ).toBe(tokenData.refresh_token);
+
+  });
+
 
   test('should getIdTokenFromCookie throw on cookies', () => {
-    expect(() => authenticator._getTokenFromCookie()).toThrow('Id token');
-    expect(() => authenticator._getTokenFromCookie('')).toThrow('Id token');
-    expect(() => authenticator._getTokenFromCookie([])).toThrow('Id token');
+    expect(() => authenticator._getTokenFromCookie(undefined,'idToken')).toThrow('idToken');
+    expect(() => authenticator._getTokenFromCookie('', 'idToken')).toThrow('idToken');
+    expect(() => authenticator._getTokenFromCookie([], 'idToken')).toThrow('idToken');
   });
 });
 
