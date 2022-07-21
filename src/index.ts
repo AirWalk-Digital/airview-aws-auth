@@ -104,9 +104,8 @@ export class Authenticator {
       });
   }
   /**
-   * Exchange authorization code for tokens.
-   * @param  {String} redirectURI Redirection URI.
-   * @param  {String} code        Authorization code.
+   * Exchange refresh token for new id & access token 
+   * @param  {String} refreshToken the refresh token to use in exchange
    * @return {Promise} Authenticated user tokens.
    */
   _fetchTokensFromRefresh(refreshToken) {
@@ -211,6 +210,7 @@ export class Authenticator {
   /**
    * Extract value of the authentication token from the request cookies.
    * @param  {Array}  cookies Request cookies.
+   * @param  {String}  tokenName the name of the token to extract.
    * @return {String} Extracted access token. Throw if not found.
    */
   _getTokenFromCookie(cookies,tokenName) {
