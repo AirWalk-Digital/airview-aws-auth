@@ -154,7 +154,7 @@ export class Authenticator {
    * @param  {String} location Path to redirection.
    * @return {Object} Lambda@Edge response.
    */
-  async _getRedirectResponse(tokens, domain, location, refreshToken=undefined) {
+  async _getRedirectResponse(tokens, domain, location) {
     const decoded = await this._jwtVerifier.verify(tokens.id_token);
     const username = decoded['cognito:username'];
     const usernameBase = `${this._cookieBase}.${username}`;
@@ -185,11 +185,7 @@ export class Authenticator {
             key: 'Set-Cookie',
             value: `${usernameBase}.idToken=${tokens.id_token}; ${directives}`,
           },
-          {
-            key: 'Set-Cookie',
-            value: `${usernameBase}.refreshToken=${tokens.refresh_token || refreshToken}; ${directives}`,
-          },
-          {
+                    {
             key: 'Set-Cookie',
             value: `${usernameBase}.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; ${directives}`,
           },
@@ -201,6 +197,12 @@ export class Authenticator {
       },
     };
 
+    if(tokens.refresh_token){
+      response.headers['set-cookie'].push({
+            key: 'Set-Cookie',
+            value: `${usernameBase}.refreshToken=${tokens.refresh_token}; ${directives}`,
+      })
+    }
     this._logger.debug({ msg: 'Generated set-cookie response', response });
 
     return response;
@@ -262,8 +264,7 @@ export class Authenticator {
             cfDomain,
             request.querystring > ''
               ? `${request.uri}?${request.querystring}`
-              : request.uri,
-            refreshToken
+              : request.uri
           )
         );
       }
