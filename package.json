@@ -1,6 +1,6 @@
 {
   "name": "cognito-at-edge",
-  "version": "1.2.2",
+  "version": "1.2.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/awslabs/cognito-at-edge"
@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "test": "jest --coverage"
   },
   "dependencies": {

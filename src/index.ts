@@ -226,8 +226,9 @@ export class Authenticator {
         }
       }
     }
-    this._logger.debug("  idToken wasn't present in request cookies");
-    throw new Error("Id token isn't present in the request cookies");
+
+    this._logger.debug(`${tokenName} wasn't present in request cookies`);
+    throw new Error(`${tokenName} isn't present in the request cookies`);
   }
 
   /**

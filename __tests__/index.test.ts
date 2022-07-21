@@ -244,6 +244,7 @@ describe('handle', () => {
     authenticator._jwtVerifier.cacheJwks(jwksData);
     jest.spyOn(authenticator, '_getTokenFromCookie');
     jest.spyOn(authenticator, '_fetchTokensFromCode');
+    jest.spyOn(authenticator, '_fetchTokensFromRefresh');
     jest.spyOn(authenticator, '_getRedirectResponse');
     jest.spyOn(authenticator._jwtVerifier, 'verify');
   });
@@ -259,6 +260,7 @@ describe('handle', () => {
 
   test('should fetch and set token if code is present', () => {
     authenticator._jwtVerifier.verify.mockImplementationOnce(async () => { throw new Error();});
+    authenticator._fetchTokensFromRefresh.mockImplementationOnce(() => { throw new Error();});
     authenticator._fetchTokensFromCode.mockResolvedValueOnce(tokenData);
     authenticator._getRedirectResponse.mockReturnValueOnce({ response: 'toto' });
     const request = getCloudfrontRequest();
@@ -271,15 +273,66 @@ describe('handle', () => {
       });
   });
 
-  test('should redirect to auth domain if unauthenticated and no code', () => {
-    authenticator._jwtVerifier.verify.mockImplementationOnce(async () => { throw new Error();});
+
+  test('should redirect to same if unauthenticated with valid refreshToken', () => {
+    authenticator._jwtVerifier.verify.mockImplementationOnce(async () => { throw new Error();}).mockReturnValueOnce(Promise.resolve({ token_use: 'id', 'cognito:username': 'toto' }));
+  
+    
+    const {refresh_token, ...rest} = tokenData;
+    axios.request = jest.fn().mockResolvedValue({ data: rest });
+
+
     return expect(authenticator.handle(getCloudfrontRequest())).resolves.toEqual(
       {
         status: '302',
         headers: {
           'location': [{
             key: 'Location',
-            value: 'https://my-cognito-domain.auth.us-east-1.amazoncognito.com/authorize?redirect_uri=https://d111111abcdef8.cloudfront.net&response_type=code&client_id=123456789qwertyuiop987abcd&state=/lol%3F%3Fparam%3D1',
+            value: '/lol?param=1',
+          }],
+          'cache-control': [{
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, max-age=0, must-revalidate',
+          }],
+          'pragma': [{
+            key: 'Pragma',
+            value: 'no-cache',
+          }],
+          "set-cookie": [
+            {
+              "key": "Set-Cookie",
+              "value": "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.accessToken=eyJz9sdfsdfsdfsd; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+            },
+            {
+              "key": "Set-Cookie",
+              "value": "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=dmcxd329ujdmkemkd349r; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+            },
+            {
+              "key": "Set-Cookie",
+              "value": "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+            },
+            {
+              "key": "Set-Cookie",
+              "value": "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=toto; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+	    }]
+        },
+      },
+    )
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toHaveBeenCalled();
+      });
+  })
+
+  test('should redirect to auth domain if unauthenticated and no code', () => {
+    authenticator._jwtVerifier.verify.mockImplementationOnce(async () => { throw new Error();});
+    authenticator._fetchTokensFromRefresh.mockImplementationOnce(() => { throw new Error();});
+    return expect(authenticator.handle(getCloudfrontRequest())).resolves.toEqual(
+      {
+        status: '302',
+        headers: {
+          'location': [{
+            key: 'Location',
+            value: 'https://my-cognito-domain.auth.us-east-1.amazoncognito.com/authorize?redirect_uri=https://d111111abcdef8.cloudfront.net&response_type=code&client_id=123456789qwertyuiop987abcd&state=/lol%3Fparam%3D1',
           }],
           'cache-control': [{
             key: 'Cache-Control',
@@ -333,7 +386,7 @@ const getCloudfrontRequest = () => ({
             "inputTruncated": false
           },
           "clientIp": "2001:0db8:85a3:0:0:8a2e:0370:7334",
-          "querystring": "?param=1",
+          "querystring": "param=1",
           "uri": "/lol",
           "method": "GET",
           "headers": {
@@ -353,6 +406,11 @@ const getCloudfrontRequest = () => ({
               {
                 key: 'cookie',
                 value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=${tokenData.access_token};`
+              },
+	      
+              {
+                key: 'cookie',
+                value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=${tokenData.refresh_token};`
               }
             ]
           },
