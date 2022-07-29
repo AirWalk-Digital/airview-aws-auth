@@ -2,7 +2,7 @@ import axios from "axios";
 
 jest.mock("axios");
 
-import { CognitoAuthenticator,ApiGatewayAuthenticator } from "../src/";
+import { CognitoAuthenticator, ApiGatewayAuthenticator } from "../src/";
 
 const DATE = new Date("2017");
 // @ts-ignore
@@ -300,12 +300,16 @@ describe("createCognitoAuthenticator", () => {
 
   test("should fail when creating authenticator with invalid cookieExpirationDay", () => {
     params.cookieExpirationDays = "123";
-    expect(() => new CognitoAuthenticator(params)).toThrow("cookieExpirationDays");
+    expect(() => new CognitoAuthenticator(params)).toThrow(
+      "cookieExpirationDays"
+    );
   });
 
   test("should fail when creating authenticator with invalid disableCookieDomain", () => {
     params.disableCookieDomain = "123";
-    expect(() => new CognitoAuthenticator(params)).toThrow("disableCookieDomain");
+    expect(() => new CognitoAuthenticator(params)).toThrow(
+      "disableCookieDomain"
+    );
   });
 });
 
@@ -583,19 +587,69 @@ const getCloudfrontRequest = () => ({
 });
 
 describe("createApiGatewayAuthenticator", () => {
-  let params;
+  let authenticator;
 
   beforeEach(() => {
-    params = {
+    authenticator = new ApiGatewayAuthenticator({
       region: "us-east-1",
       userPoolId: "us-east-1_abcdef123",
       userPoolAppId: "123456789qwertyuiop987abcd",
       userPoolDomain: "my-cognito-domain.auth.us-east-1.amazoncognito.com",
+    });
+
+    jest.spyOn(authenticator._jwtVerifier, "verify");
+  });
+
+  test("should reject invalid id token", async () => {
+    const event = {
+      cookies: [
+        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=eyJz9sdfsdfsdfsd;",
+        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=aaabbccc;",
+      ],
     };
+
+    authenticator._jwtVerifier.verify.mockReturnValue(Promise.reject());
+
+    return expect(authenticator.handle(event))
+      .resolves.toStrictEqual({ isAuthorized: false })
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
+          "eyJz9sdfsdfsdfsd"
+        );
+      });
   });
 
-  test("should create authenticator", () => {
-    expect(typeof new ApiGatewayAuthenticator(params)).toBe("object");
+  test("should reject missing id token", async () => {
+    const event = {
+      cookies: [
+        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.blahToken=eyJz9sdfsdfsdfsd;",
+        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=aaabbccc;",
+      ],
+    };
+
+    authenticator._jwtVerifier.verify.mockReturnValue(Promise.resolve());
+
+    return expect(authenticator.handle(event))
+      .resolves.toStrictEqual({ isAuthorized: false })
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toBeCalledTimes(0);
+      });
   });
 
-})
+  test("should allow valid id token", async () => {
+    const event = {
+      cookies: [
+        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=eyJz9sdfsdfsdfsd;",
+        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=aaabbccc;",
+      ],
+    };
+    authenticator._jwtVerifier.verify.mockReturnValue(Promise.resolve());
+    return expect(authenticator.handle(event))
+      .resolves.toStrictEqual({ isAuthorized: true })
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
+          "eyJz9sdfsdfsdfsd"
+        );
+      });
+  });
+});

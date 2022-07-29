@@ -107,16 +107,15 @@ export class ApiGatewayAuthenticator {
       const payload = await this._jwtVerifier.verify(
         this._getIdTokenFromCookie(event.cookies)
       );
-      console.log("Token is valid. Payload:", payload);
+      this._logger.debug("Token is valid. Payload:", payload);
       return {
         isAuthorized: true,
       };
     } catch {
-      console.log("Token is not valid!");
+      this._logger.debug("Token is not valid!");
       return {
         isAuthorized: false,
       };
     }
   }
 }
-
