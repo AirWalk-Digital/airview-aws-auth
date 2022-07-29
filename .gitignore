@@ -5,3 +5,4 @@ output-template.yml
 coverage/
 dist/
 .DS_Store
+/.envrc
