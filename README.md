@@ -21,19 +21,20 @@ If you need more configuration options (e.g. bring your own user pool or CloudFr
 The preferred way to install the AWS cognito-at-edge for Node.js is to use the [npm](http://npmjs.org/) package manager for Node.js. Simply type the following into a terminal window:
 
 ``` shell
-npm install cognito-at-edge
+npm install airview-aws-auth
 ```
 
 ### Usage
+#### Cognito@Edge
 
 To use the package, you must create a [Lambda@Edge function](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html) and associate it with the CloudFront distribution's *viewer request* events.
 
-Within your Lambda@Edge function, you can import and use the `Authenticator` class as shown here:
+Within your Lambda@Edge function, you can import and use the `CognitoAuthenticator` class as shown here:
 
 ``` js
-const { Authenticator } = require('cognito-at-edge');
+const { CognitoAuthenticator } = require('airview-aws-auth');
 
-const authenticator = new Authenticator({
+const authenticator = new CognitoAuthenticator({
   // Replace these parameter values with those of your own environment
   region: 'us-east-1', // user pool region
   userPoolId: 'us-east-1_tyo1a1FHH', // user pool ID
@@ -46,9 +47,9 @@ exports.handler = async (request) => authenticator.handle(request);
 
 For an explanation of the interactions between CloudFront, Cognito and Lambda@Edge, we recommend reading this [AWS blog article](https://aws.amazon.com/blogs/networking-and-content-delivery/authorizationedge-how-to-use-lambdaedge-and-json-web-tokens-to-enhance-web-application-security/) which describe the required architecture to authenticate requests in CloudFront with Cognito.
 
-## Reference - Authenticator Class
+## Reference - CognitoAuthenticator Class
 
-### Authenticator(params)
+### CognitoAuthenticator(params)
 
 * `params` *Object* Authenticator parameters:
   * `region` *string* Cognito UserPool region (eg: `us-east-1`)
@@ -70,9 +71,57 @@ For an explanation of the interactions between CloudFront, Cognito and Lambda@Ed
 Use it as your Lambda Handler. It will authenticate each query.
 
 ```
-const authenticator = new Authenticator( ... );
+const authenticator = new CognitoAuthenticator( ... );
 exports.handler = async (request) => authenticator.handle(request);
 ```
+
+#### Cognito@ApiGateway
+
+To use the package, you must create an Api Gateway authenticator lambda
+
+Within your Lambda function, you can import and use the `ApiGatewayAuthenticator` class as shown here:
+
+``` js
+const { ApiGatewayAuthenticator } = require('airview-aws-auth');
+
+const authenticator = new ApiGatewayAuthenticator({
+  // Replace these parameter values with those of your own environment
+  region: 'us-east-1', // user pool region
+  userPoolId: 'us-east-1_tyo1a1FHH', // user pool ID
+  userPoolAppId: '63gcbm2jmskokurt5ku9fhejc6', // user pool app client ID
+  userPoolDomain: 'domain.auth.us-east-1.amazoncognito.com', // user pool domain
+});
+
+exports.handler = async (request) => authenticator.handle(request);
+```
+
+## Reference - ApiGatewayAuthenticator Class
+
+### ApiGatewayAuthenticator(params)
+
+* `params` *Object* Authenticator parameters:
+  * `region` *string* Cognito UserPool region (eg: `us-east-1`)
+  * `userPoolId` *string* Cognito UserPool ID (eg: `us-east-1_tyo1a1FHH`)
+  * `userPoolAppId` *string* Cognito UserPool Application ID (eg: `63gcbm2jmskokurt5ku9fhejc6`)
+  * `userPoolAppSecret` *string* (Optional) Cognito UserPool Application Secret (eg: `oh470px2i0uvy4i2ha6sju0vxe4ata9ol3m63ufhs2t8yytwjn7p`)
+  * `userPoolDomain` *string* Cognito UserPool domain (eg: `your-domain.auth.us-east-1.amazoncognito.com`)
+  * `logLevel` *string* (Optional) Logging level. Default: `'silent'`. One of `'fatal'`, `'error'`, `'warn'`, `'info'`, `'debug'`, `'trace'` or `'silent'`.
+
+*This is the class constructor.*
+
+### handle(request)
+
+* `request` *Object* Lambda@Edge request object
+  * See AWS doc for details: [Lambda@Edge events](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-event-structure.html)
+
+Use it as your Lambda Handler. It will authenticate each query.
+
+```
+const authenticator = new ApiGatewayAuthenticator( ... );
+exports.handler = async (request) => authenticator.handle(request);
+```
+
+
 
 ### Getting Help
 
