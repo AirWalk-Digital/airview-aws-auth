@@ -23,7 +23,7 @@ interface RedirectResponseParams {
   /** location: Path/URL to redirect the caller to. */
   location: any;
   /** cookiePath: Path attribute to be set on the cookies.  */
-  cookiePath: string;
+  cookiePath?: string;
 }
 
 export class Authenticator {
@@ -190,7 +190,7 @@ export class Authenticator {
     tokens,
     domain,
     location,
-    cookiePath,
+    cookiePath = "/",
   }: RedirectResponseParams) {
     const decoded = await this._jwtVerifier.verify(tokens.id_token);
     const username = decoded["cognito:username"];
@@ -201,7 +201,7 @@ export class Authenticator {
         )}; Secure; Path=${cookiePath}`
       : `Expires=${new Date(
           Date.now() + this._cookieExpirationDays * 864e5
-        )}; Secure; Path=${cookiePath}/`;
+        )}; Secure; Path=${cookiePath}`;
     const response = {
       status: "302",
       headers: {
@@ -304,7 +304,6 @@ export class Authenticator {
     const requestParams = parse(request.querystring);
     const cfDomain = request.headers.host[0].value;
     const redirectURI = `https://${cfDomain}`;
-    const cookiePath = "/";
 
     try {
       const token = this._getTokenFromCookie(request.headers.cookie, "idToken");
@@ -330,7 +329,6 @@ export class Authenticator {
               request.querystring > ""
                 ? `${request.uri}?${request.querystring}`
                 : request.uri,
-            cookiePath,
           })
         );
       }
@@ -343,7 +341,6 @@ export class Authenticator {
               tokens,
               domain: cfDomain,
               location: requestParams.state,
-              cookiePath,
             })
         );
       } else {

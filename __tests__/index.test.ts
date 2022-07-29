@@ -143,23 +143,23 @@ describe("private functions", () => {
       expect.arrayContaining([
         {
           key: "Set-Cookie",
-          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.accessToken=${tokenData.access_token}; Expires=${DATE}; Secure; Path=/myPath/`,
+          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.accessToken=${tokenData.access_token}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
           key: "Set-Cookie",
-          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.refreshToken=${tokenData.refresh_token}; Expires=${DATE}; Secure; Path=/myPath/`,
+          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.refreshToken=${tokenData.refresh_token}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
           key: "Set-Cookie",
-          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Expires=${DATE}; Secure; Path=/myPath/`,
+          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
           key: "Set-Cookie",
-          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.idToken=${tokenData.id_token}; Expires=${DATE}; Secure; Path=/myPath/`,
+          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.idToken=${tokenData.id_token}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
           key: "Set-Cookie",
-          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=${username}; Expires=${DATE}; Secure; Path=/myPath/`,
+          value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=${username}; Expires=${DATE}; Secure; Path=/myPath`,
         },
       ])
     );
@@ -361,7 +361,6 @@ describe("handle", () => {
           tokens: tokenData,
           domain: "d111111abcdef8.cloudfront.net",
           location: "/lol",
-          cookiePath: "/",
         });
       });
   });
