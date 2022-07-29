@@ -417,23 +417,19 @@ describe("handle", () => {
           "set-cookie": [
             {
               key: "Set-Cookie",
-              value:
-                "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.accessToken=eyJz9sdfsdfsdfsd; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+              value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.accessToken=eyJz9sdfsdfsdfsd; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
             {
               key: "Set-Cookie",
-              value:
-                "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=dmcxd329ujdmkemkd349r; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+              value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=dmcxd329ujdmkemkd349r; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
             {
               key: "Set-Cookie",
-              value:
-                "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+              value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
             {
               key: "Set-Cookie",
-              value:
-                "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=toto; Domain=d111111abcdef8.cloudfront.net; Expires=Sun Jan 01 2017 00:00:00 GMT+0000 (Greenwich Mean Time); Secure; Path=/",
+              value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=toto; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
           ],
         },
