@@ -2,7 +2,10 @@ import axios from "axios";
 
 jest.mock("axios");
 
-import { CognitoAuthenticator, ApiGatewayAuthenticator } from "../src/";
+import {
+  CloudFrontUserAuthenticator,
+  ApiGatewayRequestValidator,
+} from "../src/";
 
 const DATE = new Date("2017");
 // @ts-ignore
@@ -17,7 +20,7 @@ describe("private functions", () => {
   let authenticator;
 
   beforeEach(() => {
-    authenticator = new CognitoAuthenticator({
+    authenticator = new CloudFrontUserAuthenticator({
       region: "us-east-1",
       userPoolId: "us-east-1_abcdef123",
       userPoolAppId: "123456789qwertyuiop987abcd",
@@ -100,7 +103,7 @@ describe("private functions", () => {
   });
 
   test("should not return cookie domain", async () => {
-    const authenticatorWithNoCookieDomain = new CognitoAuthenticator({
+    const authenticatorWithNoCookieDomain = new CloudFrontUserAuthenticator({
       region: "us-east-1",
       userPoolId: "us-east-1_abcdef123",
       userPoolAppId: "123456789qwertyuiop987abcd",
@@ -223,7 +226,7 @@ describe("private functions", () => {
   });
 });
 
-describe("createCognitoAuthenticator", () => {
+describe("create CloudFrontUserAuthenticator", () => {
   let params;
 
   beforeEach(() => {
@@ -238,76 +241,84 @@ describe("createCognitoAuthenticator", () => {
   });
 
   test("should create authenticator", () => {
-    expect(typeof new CognitoAuthenticator(params)).toBe("object");
+    expect(typeof new CloudFrontUserAuthenticator(params)).toBe("object");
   });
 
   test("should create authenticator without cookieExpirationDay", () => {
     delete params.cookieExpirationDays;
-    expect(typeof new CognitoAuthenticator(params)).toBe("object");
+    expect(typeof new CloudFrontUserAuthenticator(params)).toBe("object");
   });
 
   test("should create authenticator without disableCookieDomain", () => {
     delete params.disableCookieDomain;
-    expect(typeof new CognitoAuthenticator(params)).toBe("object");
+    expect(typeof new CloudFrontUserAuthenticator(params)).toBe("object");
   });
 
   test("should fail when creating authenticator without params", () => {
     // @ts-ignore
     // ts-ignore is used here to override typescript's type check in the constructor
     // this test is still useful when the library is imported to a js file
-    expect(() => new CognitoAuthenticator()).toThrow("Expected params");
+    expect(() => new CloudFrontUserAuthenticator()).toThrow("Expected params");
   });
 
   test("should fail when creating authenticator without region", () => {
     delete params.region;
-    expect(() => new CognitoAuthenticator(params)).toThrow("region");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("region");
   });
 
   test("should fail when creating authenticator without userPoolId", () => {
     delete params.userPoolId;
-    expect(() => new CognitoAuthenticator(params)).toThrow("userPoolId");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("userPoolId");
   });
 
   test("should fail when creating authenticator without userPoolAppId", () => {
     delete params.userPoolAppId;
-    expect(() => new CognitoAuthenticator(params)).toThrow("userPoolAppId");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
+      "userPoolAppId"
+    );
   });
 
   test("should fail when creating authenticator without userPoolDomain", () => {
     delete params.userPoolDomain;
-    expect(() => new CognitoAuthenticator(params)).toThrow("userPoolDomain");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
+      "userPoolDomain"
+    );
   });
 
   test("should fail when creating authenticator with invalid region", () => {
     params.region = 123;
-    expect(() => new CognitoAuthenticator(params)).toThrow("region");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("region");
   });
 
   test("should fail when creating authenticator with invalid userPoolId", () => {
     params.userPoolId = 123;
-    expect(() => new CognitoAuthenticator(params)).toThrow("userPoolId");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("userPoolId");
   });
 
   test("should fail when creating authenticator with invalid userPoolAppId", () => {
     params.userPoolAppId = 123;
-    expect(() => new CognitoAuthenticator(params)).toThrow("userPoolAppId");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
+      "userPoolAppId"
+    );
   });
 
   test("should fail when creating authenticator with invalid userPoolDomain", () => {
     params.userPoolDomain = 123;
-    expect(() => new CognitoAuthenticator(params)).toThrow("userPoolDomain");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
+      "userPoolDomain"
+    );
   });
 
   test("should fail when creating authenticator with invalid cookieExpirationDay", () => {
     params.cookieExpirationDays = "123";
-    expect(() => new CognitoAuthenticator(params)).toThrow(
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
       "cookieExpirationDays"
     );
   });
 
   test("should fail when creating authenticator with invalid disableCookieDomain", () => {
     params.disableCookieDomain = "123";
-    expect(() => new CognitoAuthenticator(params)).toThrow(
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
       "disableCookieDomain"
     );
   });
@@ -317,7 +328,7 @@ describe("handle", () => {
   let authenticator;
 
   beforeEach(() => {
-    authenticator = new CognitoAuthenticator({
+    authenticator = new CloudFrontUserAuthenticator({
       region: "us-east-1",
       userPoolId: "us-east-1_abcdef123",
       userPoolAppId: "123456789qwertyuiop987abcd",
@@ -590,7 +601,7 @@ describe("createApiGatewayAuthenticator", () => {
   let authenticator;
 
   beforeEach(() => {
-    authenticator = new ApiGatewayAuthenticator({
+    authenticator = new ApiGatewayRequestValidator({
       region: "us-east-1",
       userPoolId: "us-east-1_abcdef123",
       userPoolAppId: "123456789qwertyuiop987abcd",

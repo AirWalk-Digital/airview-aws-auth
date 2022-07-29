@@ -1,2 +1,2 @@
-export { CognitoAuthenticator } from "./cognito-authenticator";
-export { ApiGatewayAuthenticator } from "./api-gateway-authenticator";
+export { CloudFrontUserAuthenticator } from "./cloud-front-user-authenticator"
+export { ApiGatewayRequestValidator } from "./api-gateway-request-validator"

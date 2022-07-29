@@ -5,7 +5,7 @@ import {
   APIGatewaySimpleAuthorizerResult,
 } from "aws-lambda";
 
-interface ApiGatewayAuthenticatorParams {
+interface ApiGatewayRequestValidatorParams {
   region: string;
   userPoolId: string;
   userPoolAppId: string;
@@ -14,7 +14,7 @@ interface ApiGatewayAuthenticatorParams {
   logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent";
 }
 
-export class ApiGatewayAuthenticator {
+export class ApiGatewayRequestValidator {
   _region: string;
   _userPoolId: string;
   _userPoolAppId: string;
@@ -24,7 +24,7 @@ export class ApiGatewayAuthenticator {
   _logger;
   _jwtVerifier;
 
-  constructor(params: ApiGatewayAuthenticatorParams) {
+  constructor(params: ApiGatewayRequestValidatorParams) {
     this._verifyParams(params);
     this._region = params.region;
     this._userPoolId = params.userPoolId;

@@ -4,7 +4,7 @@ import pino from "pino";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { CloudFrontRequestEvent, CloudFrontRequestResult } from "aws-lambda";
 
-interface CognitoAuthenticatorParams {
+interface CloudFrontUserAuthenticatorParams {
   region: string;
   userPoolId: string;
   userPoolAppId: string;
@@ -26,7 +26,7 @@ interface RedirectResponseParams {
   cookiePath?: string;
 }
 
-export class CognitoAuthenticator {
+export class CloudFrontUserAuthenticator {
   _region: string;
   _userPoolId: string;
   _userPoolAppId: string;
@@ -38,7 +38,7 @@ export class CognitoAuthenticator {
   _logger;
   _jwtVerifier;
 
-  constructor(params: CognitoAuthenticatorParams) {
+  constructor(params: CloudFrontUserAuthenticatorParams) {
     this._verifyParams(params);
     this._region = params.region;
     this._userPoolId = params.userPoolId;
