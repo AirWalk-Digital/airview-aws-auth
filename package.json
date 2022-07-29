@@ -1,12 +1,12 @@
 {
-  "name": "cognito-at-edge",
-  "version": "1.2.2",
+  "name": "airview-aws-auth",
+  "version": "0.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/awslabs/cognito-at-edge"
+    "url": "https://github.com/AirWalk-Digital/cognito-at-edge"
   },
-  "description": "Cognito authentication made easy to protect your website with CloudFront and Lambda@Edge.",
-  "author": "AWS Builder Labs <aws-builder-labs@amazon.com>",
+  "description": "AWS Cognito & API Gateway authentication for Airview",
+  "author": "Airwalk Reply",
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
