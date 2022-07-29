@@ -20,7 +20,7 @@ jobs:
           git config user.email gh-actions-${GITHUB_ACTOR}@github.com
 
       - name: NPM CI
-        run: npm ci
+        run: npm install
       - name: Run Tests
         run: |
           npm test
