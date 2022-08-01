@@ -29,12 +29,12 @@ npm install airview-aws-auth
 
 To use the package, you must create a [Lambda@Edge function](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html) and associate it with the CloudFront distribution's *viewer request* events.
 
-Within your Lambda@Edge function, you can import and use the `CloudfrontUserAuthenticator` class as shown here:
+Within your Lambda@Edge function, you can import and use the `CloudFrontUserAuthenticator` class as shown here:
 
 ``` js
-const { CloudfrontUserAuthenticator } = require('airview-aws-auth');
+const { CloudFrontUserAuthenticator } = require('airview-aws-auth');
 
-const authenticator = new CloudfrontUserAuthenticator({
+const authenticator = new CloudFrontUserAuthenticator({
   // Replace these parameter values with those of your own environment
   region: 'us-east-1', // user pool region
   userPoolId: 'us-east-1_tyo1a1FHH', // user pool ID
@@ -47,9 +47,9 @@ exports.handler = async (request) => authenticator.handle(request);
 
 For an explanation of the interactions between CloudFront, Cognito and Lambda@Edge, we recommend reading this [AWS blog article](https://aws.amazon.com/blogs/networking-and-content-delivery/authorizationedge-how-to-use-lambdaedge-and-json-web-tokens-to-enhance-web-application-security/) which describe the required architecture to authenticate requests in CloudFront with Cognito.
 
-## Reference - CloudfrontUserAuthenticator Class
+## Reference - CloudFrontUserAuthenticator Class
 
-### CloudfrontUserAuthenticator(params)
+### CloudFrontUserAuthenticator(params)
 
 * `params` *Object* Authenticator parameters:
   * `region` *string* Cognito UserPool region (eg: `us-east-1`)
@@ -71,7 +71,7 @@ For an explanation of the interactions between CloudFront, Cognito and Lambda@Ed
 Use it as your Lambda Handler. It will authenticate each query.
 
 ```
-const authenticator = new CloudfrontUserAuthenticator( ... );
+const authenticator = new CloudFrontUserAuthenticator( ... );
 exports.handler = async (request) => authenticator.handle(request);
 ```
 
