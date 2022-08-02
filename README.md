@@ -46,7 +46,7 @@ exports.handler = async (request) => authenticator.handle(request);
 
 *This is the class constructor.*
 
-##### handle(request)
+##### `handle(request)`
 
 * `request` *Object* Lambda@Edge request object
   * See AWS doc for details: [Lambda@Edge events](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-event-structure.html)
@@ -84,9 +84,9 @@ const authenticator = new ApiGatewayRequestValidator({
 exports.handler = async (request) => authenticator.handle(request);
 ```
 
-## Reference - ApiGatewayRequestValidator Class
+#### Reference - ApiGatewayRequestValidator Class
 
-### ApiGatewayRequestValidator(params)
+##### `ApiGatewayRequestValidator(params)`
 
 * `params` *Object* Authenticator parameters:
   * `region` *string* Cognito UserPool region (eg: `us-east-1`)
@@ -98,7 +98,7 @@ exports.handler = async (request) => authenticator.handle(request);
 
 *This is the class constructor.*
 
-### handle(request)
+##### `handle(request)`
 
 * `request` *Object* Lambda@Edge request object
   * See AWS doc for details: [Lambda@Edge events](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-event-structure.html)
