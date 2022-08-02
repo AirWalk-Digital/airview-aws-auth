@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AirWalk-Digital/cognito-at-edge"
+    "url": "https://github.com/AirWalk-Digital/airview-aws-auth"
   },
   "description": "AWS Cognito & API Gateway authentication for Airview",
   "author": "Airwalk Reply",

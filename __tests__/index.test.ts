@@ -1,13 +1,14 @@
-import axios from "axios";
+import axios from 'axios';
 
-jest.mock("axios");
+jest.mock('axios');
 
 import {
   CloudFrontUserAuthenticator,
   ApiGatewayRequestValidator,
-} from "../src/";
+} from '../src/';
 
-const DATE = new Date("2017");
+const DATE = new Date('2017');
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 global.Date = class extends Date {
   constructor() {
@@ -16,46 +17,46 @@ global.Date = class extends Date {
   }
 };
 
-describe("private functions", () => {
+describe('private functions', () => {
   let authenticator;
 
   beforeEach(() => {
     authenticator = new CloudFrontUserAuthenticator({
-      region: "us-east-1",
-      userPoolId: "us-east-1_abcdef123",
-      userPoolAppId: "123456789qwertyuiop987abcd",
-      userPoolDomain: "my-cognito-domain.auth.us-east-1.amazoncognito.com",
+      region: 'us-east-1',
+      userPoolId: 'us-east-1_abcdef123',
+      userPoolAppId: '123456789qwertyuiop987abcd',
+      userPoolDomain: 'my-cognito-domain.auth.us-east-1.amazoncognito.com',
       cookieExpirationDays: 365,
       disableCookieDomain: false,
-      logLevel: "error",
+      logLevel: 'error',
     });
   });
 
-  test("should fetch token", () => {
+  test('should fetch token', () => {
     axios.request = jest.fn().mockResolvedValue({ data: tokenData });
 
     return authenticator
-      ._fetchTokensFromCode("htt://redirect", "AUTH_CODE")
+      ._fetchTokensFromCode('htt://redirect', 'AUTH_CODE')
       .then((res) => {
         expect(res).toEqual(tokenData);
       });
   });
 
-  test("should throw if unable to fetch token", () => {
-    axios.request = jest.fn().mockRejectedValue(new Error("Unexpected error"));
+  test('should throw if unable to fetch token', () => {
+    axios.request = jest.fn().mockRejectedValue(new Error('Unexpected error'));
     return expect(() =>
-      authenticator._fetchTokensFromCode("htt://redirect", "AUTH_CODE")
+      authenticator._fetchTokensFromCode('htt://redirect', 'AUTH_CODE')
     ).rejects.toThrow();
   });
 
-  test("should getRedirectResponse", async () => {
-    const username = "toto";
-    const domain = "example.com";
-    const location = "/test";
-    const cookiePath = "/myPath";
-    jest.spyOn(authenticator._jwtVerifier, "verify");
+  test('should getRedirectResponse', async () => {
+    const username = 'toto';
+    const domain = 'example.com';
+    const location = '/test';
+    const cookiePath = '/myPath';
+    jest.spyOn(authenticator._jwtVerifier, 'verify');
     authenticator._jwtVerifier.verify.mockReturnValueOnce(
-      Promise.resolve({ token_use: "id", "cognito:username": username })
+      Promise.resolve({ token_use: 'id', 'cognito:username': username })
     );
 
     const response = await authenticator._getRedirectResponse({
@@ -65,36 +66,36 @@ describe("private functions", () => {
       cookiePath,
     });
     expect(response).toMatchObject({
-      status: "302",
+      status: '302',
       headers: {
         location: [
           {
-            key: "Location",
+            key: 'Location',
             value: location,
           },
         ],
       },
     });
-    expect(response.headers["set-cookie"]).toEqual(
+    expect(response.headers['set-cookie']).toEqual(
       expect.arrayContaining([
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.accessToken=${tokenData.access_token}; Domain=${domain}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.refreshToken=${tokenData.refresh_token}; Domain=${domain}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Domain=${domain}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.idToken=${tokenData.id_token}; Domain=${domain}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=${username}; Domain=${domain}; Expires=${DATE}; Secure; Path=/myPath`,
         },
       ])
@@ -102,25 +103,25 @@ describe("private functions", () => {
     expect(authenticator._jwtVerifier.verify).toHaveBeenCalled();
   });
 
-  test("should not return cookie domain", async () => {
+  test('should not return cookie domain', async () => {
     const authenticatorWithNoCookieDomain = new CloudFrontUserAuthenticator({
-      region: "us-east-1",
-      userPoolId: "us-east-1_abcdef123",
-      userPoolAppId: "123456789qwertyuiop987abcd",
-      userPoolDomain: "my-cognito-domain.auth.us-east-1.amazoncognito.com",
+      region: 'us-east-1',
+      userPoolId: 'us-east-1_abcdef123',
+      userPoolAppId: '123456789qwertyuiop987abcd',
+      userPoolDomain: 'my-cognito-domain.auth.us-east-1.amazoncognito.com',
       cookieExpirationDays: 365,
       disableCookieDomain: true,
-      logLevel: "error",
+      logLevel: 'error',
     });
     authenticatorWithNoCookieDomain._jwtVerifier.cacheJwks(jwksData);
 
-    const username = "toto";
-    const domain = "example.com";
-    const path = "/test";
-    const cookiePath = "/myPath";
-    jest.spyOn(authenticatorWithNoCookieDomain._jwtVerifier, "verify");
+    const username = 'toto';
+    const domain = 'example.com';
+    const path = '/test';
+    const cookiePath = '/myPath';
+    jest.spyOn(authenticatorWithNoCookieDomain._jwtVerifier, 'verify');
     authenticatorWithNoCookieDomain._jwtVerifier.verify.mockReturnValueOnce(
-      Promise.resolve({ token_use: "id", "cognito:username": username })
+      Promise.resolve({ token_use: 'id', 'cognito:username': username })
     );
 
     const response = await authenticatorWithNoCookieDomain._getRedirectResponse(
@@ -132,36 +133,36 @@ describe("private functions", () => {
       }
     );
     expect(response).toMatchObject({
-      status: "302",
+      status: '302',
       headers: {
         location: [
           {
-            key: "Location",
+            key: 'Location',
             value: path,
           },
         ],
       },
     });
-    expect(response.headers["set-cookie"]).toEqual(
+    expect(response.headers['set-cookie']).toEqual(
       expect.arrayContaining([
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.accessToken=${tokenData.access_token}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.refreshToken=${tokenData.refresh_token}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${username}.idToken=${tokenData.id_token}; Expires=${DATE}; Secure; Path=/myPath`,
         },
         {
-          key: "Set-Cookie",
+          key: 'Set-Cookie',
           value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=${username}; Expires=${DATE}; Secure; Path=/myPath`,
         },
       ])
@@ -171,17 +172,17 @@ describe("private functions", () => {
     ).toHaveBeenCalled();
   });
 
-  test("should getIdTokenFromCookie", () => {
-    const appClientName = "toto,./;;..-_lol123";
+  test('should getIdTokenFromCookie', () => {
+    const appClientName = 'toto,./;;..-_lol123';
     expect(
       authenticator._getTokenFromCookie(
         [
           {
-            key: "Cookie",
+            key: 'Cookie',
             value: `CognitoIdentityServiceProvider.5uka3k8840tap1g1i1617jh8pi.${appClientName}.idToken=wrong; CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.idToken=${tokenData.id_token}; CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.idToken=${tokenData.id_token}; CognitoIdentityServiceProvider.5ukasw8840tap1g1i1617jh8pi.${appClientName}.idToken=wrong;`,
           },
         ],
-        "idToken"
+        'idToken'
       )
     ).toBe(tokenData.id_token);
 
@@ -189,162 +190,163 @@ describe("private functions", () => {
       authenticator._getTokenFromCookie(
         [
           {
-            key: "Cookie",
+            key: 'Cookie',
             value: `CognitoIdentityServiceProvider.5uka3k8840tap1g1i1617jh8pi.${appClientName}.accessToken=someValue; CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.idToken=${tokenData.id_token}`,
           },
         ],
-        "idToken"
+        'idToken'
       )
     ).toBe(tokenData.id_token);
   });
 
-  test("should getRefreshTokenFromCookie", () => {
-    const appClientName = "toto,./;;..-_lol123";
+  test('should getRefreshTokenFromCookie', () => {
+    const appClientName = 'toto,./;;..-_lol123';
     expect(
       authenticator._getTokenFromCookie(
         [
           {
-            key: "Cookie",
+            key: 'Cookie',
             value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.refreshToken=${tokenData.refresh_token}; CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.idToken=${tokenData.id_token}; CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.${appClientName}.idToken=${tokenData.id_token}; CognitoIdentityServiceProvider.5ukasw8840tap1g1i1617jh8pi.${appClientName}.idToken=wrong;`,
           },
         ],
-        "refreshToken"
+        'refreshToken'
       )
     ).toBe(tokenData.refresh_token);
   });
 
-  test("should getIdTokenFromCookie throw on cookies", () => {
+  test('should getIdTokenFromCookie throw on cookies', () => {
     expect(() =>
-      authenticator._getTokenFromCookie(undefined, "idToken")
-    ).toThrow("idToken");
-    expect(() => authenticator._getTokenFromCookie("", "idToken")).toThrow(
-      "idToken"
+      authenticator._getTokenFromCookie(undefined, 'idToken')
+    ).toThrow('idToken');
+    expect(() => authenticator._getTokenFromCookie('', 'idToken')).toThrow(
+      'idToken'
     );
-    expect(() => authenticator._getTokenFromCookie([], "idToken")).toThrow(
-      "idToken"
+    expect(() => authenticator._getTokenFromCookie([], 'idToken')).toThrow(
+      'idToken'
     );
   });
 });
 
-describe("create CloudFrontUserAuthenticator", () => {
+describe('create CloudFrontUserAuthenticator', () => {
   let params;
 
   beforeEach(() => {
     params = {
-      region: "us-east-1",
-      userPoolId: "us-east-1_abcdef123",
-      userPoolAppId: "123456789qwertyuiop987abcd",
-      userPoolDomain: "my-cognito-domain.auth.us-east-1.amazoncognito.com",
+      region: 'us-east-1',
+      userPoolId: 'us-east-1_abcdef123',
+      userPoolAppId: '123456789qwertyuiop987abcd',
+      userPoolDomain: 'my-cognito-domain.auth.us-east-1.amazoncognito.com',
       cookieExpirationDays: 365,
       disableCookieDomain: true,
     };
   });
 
-  test("should create authenticator", () => {
-    expect(typeof new CloudFrontUserAuthenticator(params)).toBe("object");
+  test('should create authenticator', () => {
+    expect(typeof new CloudFrontUserAuthenticator(params)).toBe('object');
   });
 
-  test("should create authenticator without cookieExpirationDay", () => {
+  test('should create authenticator without cookieExpirationDay', () => {
     delete params.cookieExpirationDays;
-    expect(typeof new CloudFrontUserAuthenticator(params)).toBe("object");
+    expect(typeof new CloudFrontUserAuthenticator(params)).toBe('object');
   });
 
-  test("should create authenticator without disableCookieDomain", () => {
+  test('should create authenticator without disableCookieDomain', () => {
     delete params.disableCookieDomain;
-    expect(typeof new CloudFrontUserAuthenticator(params)).toBe("object");
+    expect(typeof new CloudFrontUserAuthenticator(params)).toBe('object');
   });
 
-  test("should fail when creating authenticator without params", () => {
+  test('should fail when creating authenticator without params', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     // ts-ignore is used here to override typescript's type check in the constructor
     // this test is still useful when the library is imported to a js file
-    expect(() => new CloudFrontUserAuthenticator()).toThrow("Expected params");
+    expect(() => new CloudFrontUserAuthenticator()).toThrow('Expected params');
   });
 
-  test("should fail when creating authenticator without region", () => {
+  test('should fail when creating authenticator without region', () => {
     delete params.region;
-    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("region");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow('region');
   });
 
-  test("should fail when creating authenticator without userPoolId", () => {
+  test('should fail when creating authenticator without userPoolId', () => {
     delete params.userPoolId;
-    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("userPoolId");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow('userPoolId');
   });
 
-  test("should fail when creating authenticator without userPoolAppId", () => {
+  test('should fail when creating authenticator without userPoolAppId', () => {
     delete params.userPoolAppId;
     expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
-      "userPoolAppId"
+      'userPoolAppId'
     );
   });
 
-  test("should fail when creating authenticator without userPoolDomain", () => {
+  test('should fail when creating authenticator without userPoolDomain', () => {
     delete params.userPoolDomain;
     expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
-      "userPoolDomain"
+      'userPoolDomain'
     );
   });
 
-  test("should fail when creating authenticator with invalid region", () => {
+  test('should fail when creating authenticator with invalid region', () => {
     params.region = 123;
-    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("region");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow('region');
   });
 
-  test("should fail when creating authenticator with invalid userPoolId", () => {
+  test('should fail when creating authenticator with invalid userPoolId', () => {
     params.userPoolId = 123;
-    expect(() => new CloudFrontUserAuthenticator(params)).toThrow("userPoolId");
+    expect(() => new CloudFrontUserAuthenticator(params)).toThrow('userPoolId');
   });
 
-  test("should fail when creating authenticator with invalid userPoolAppId", () => {
+  test('should fail when creating authenticator with invalid userPoolAppId', () => {
     params.userPoolAppId = 123;
     expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
-      "userPoolAppId"
+      'userPoolAppId'
     );
   });
 
-  test("should fail when creating authenticator with invalid userPoolDomain", () => {
+  test('should fail when creating authenticator with invalid userPoolDomain', () => {
     params.userPoolDomain = 123;
     expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
-      "userPoolDomain"
+      'userPoolDomain'
     );
   });
 
-  test("should fail when creating authenticator with invalid cookieExpirationDay", () => {
-    params.cookieExpirationDays = "123";
+  test('should fail when creating authenticator with invalid cookieExpirationDay', () => {
+    params.cookieExpirationDays = '123';
     expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
-      "cookieExpirationDays"
+      'cookieExpirationDays'
     );
   });
 
-  test("should fail when creating authenticator with invalid disableCookieDomain", () => {
-    params.disableCookieDomain = "123";
+  test('should fail when creating authenticator with invalid disableCookieDomain', () => {
+    params.disableCookieDomain = '123';
     expect(() => new CloudFrontUserAuthenticator(params)).toThrow(
-      "disableCookieDomain"
+      'disableCookieDomain'
     );
   });
 });
 
-describe("handle", () => {
+describe('handle', () => {
   let authenticator;
 
   beforeEach(() => {
     authenticator = new CloudFrontUserAuthenticator({
-      region: "us-east-1",
-      userPoolId: "us-east-1_abcdef123",
-      userPoolAppId: "123456789qwertyuiop987abcd",
-      userPoolDomain: "my-cognito-domain.auth.us-east-1.amazoncognito.com",
+      region: 'us-east-1',
+      userPoolId: 'us-east-1_abcdef123',
+      userPoolAppId: '123456789qwertyuiop987abcd',
+      userPoolDomain: 'my-cognito-domain.auth.us-east-1.amazoncognito.com',
       cookieExpirationDays: 365,
-      logLevel: "debug",
+      logLevel: 'debug',
     });
     authenticator._jwtVerifier.cacheJwks(jwksData);
-    jest.spyOn(authenticator, "_getTokenFromCookie");
-    jest.spyOn(authenticator, "_fetchTokensFromCode");
-    jest.spyOn(authenticator, "_fetchTokensFromRefresh");
-    jest.spyOn(authenticator, "_getRedirectResponse");
-    jest.spyOn(authenticator._jwtVerifier, "verify");
+    jest.spyOn(authenticator, '_getTokenFromCookie');
+    jest.spyOn(authenticator, '_fetchTokensFromCode');
+    jest.spyOn(authenticator, '_fetchTokensFromRefresh');
+    jest.spyOn(authenticator, '_getRedirectResponse');
+    jest.spyOn(authenticator._jwtVerifier, 'verify');
   });
 
-  test("should forward request if authenticated", () => {
+  test('should forward request if authenticated', () => {
     authenticator._jwtVerifier.verify.mockReturnValueOnce(Promise.resolve({}));
     return expect(authenticator.handle(getCloudfrontRequest()))
       .resolves.toEqual(getCloudfrontRequest().Records[0].cf.request)
@@ -354,7 +356,7 @@ describe("handle", () => {
       });
   });
 
-  test("should fetch and set token if code is present", () => {
+  test('should fetch and set token if code is present', () => {
     authenticator._jwtVerifier.verify.mockImplementationOnce(async () => {
       throw new Error();
     });
@@ -363,30 +365,30 @@ describe("handle", () => {
     });
     authenticator._fetchTokensFromCode.mockResolvedValueOnce(tokenData);
     authenticator._getRedirectResponse.mockReturnValueOnce({
-      response: "toto",
+      response: 'toto',
     });
     const request = getCloudfrontRequest();
-    request.Records[0].cf.request.querystring = "code=54fe5f4e&state=/lol";
+    request.Records[0].cf.request.querystring = 'code=54fe5f4e&state=/lol';
     return expect(authenticator.handle(request))
-      .resolves.toEqual({ response: "toto" })
+      .resolves.toEqual({ response: 'toto' })
       .then(() => {
         expect(authenticator._jwtVerifier.verify).toHaveBeenCalled();
         expect(authenticator._fetchTokensFromCode).toHaveBeenCalled();
         expect(authenticator._getRedirectResponse).toHaveBeenCalledWith({
           tokens: tokenData,
-          domain: "d111111abcdef8.cloudfront.net",
-          location: "/lol",
+          domain: 'd111111abcdef8.cloudfront.net',
+          location: '/lol',
         });
       });
   });
 
-  test("should redirect to same if unauthenticated with valid refreshToken", () => {
+  test('should redirect to same if unauthenticated with valid refreshToken', () => {
     authenticator._jwtVerifier.verify
       .mockImplementationOnce(async () => {
         throw new Error();
       })
       .mockReturnValueOnce(
-        Promise.resolve({ token_use: "id", "cognito:username": "toto" })
+        Promise.resolve({ token_use: 'id', 'cognito:username': 'toto' })
       );
 
     const { refresh_token, ...rest } = tokenData;
@@ -394,41 +396,41 @@ describe("handle", () => {
 
     return expect(authenticator.handle(getCloudfrontRequest()))
       .resolves.toEqual({
-        status: "302",
+        status: '302',
         headers: {
           location: [
             {
-              key: "Location",
-              value: "/lol?param=1",
+              key: 'Location',
+              value: '/lol?param=1',
             },
           ],
-          "cache-control": [
+          'cache-control': [
             {
-              key: "Cache-Control",
-              value: "no-cache, no-store, max-age=0, must-revalidate",
+              key: 'Cache-Control',
+              value: 'no-cache, no-store, max-age=0, must-revalidate',
             },
           ],
           pragma: [
             {
-              key: "Pragma",
-              value: "no-cache",
+              key: 'Pragma',
+              value: 'no-cache',
             },
           ],
-          "set-cookie": [
+          'set-cookie': [
             {
-              key: "Set-Cookie",
+              key: 'Set-Cookie',
               value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.accessToken=eyJz9sdfsdfsdfsd; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
             {
-              key: "Set-Cookie",
+              key: 'Set-Cookie',
               value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=dmcxd329ujdmkemkd349r; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
             {
-              key: "Set-Cookie",
+              key: 'Set-Cookie',
               value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.tokenScopesString=phone email profile openid aws.cognito.signin.user.admin; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
             {
-              key: "Set-Cookie",
+              key: 'Set-Cookie',
               value: `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.LastAuthUser=toto; Domain=d111111abcdef8.cloudfront.net; Expires=${DATE}; Secure; Path=/`,
             },
           ],
@@ -439,7 +441,7 @@ describe("handle", () => {
       });
   });
 
-  test("should redirect to auth domain if unauthenticated and no code", () => {
+  test('should redirect to auth domain if unauthenticated and no code', () => {
     authenticator._jwtVerifier.verify.mockImplementationOnce(async () => {
       throw new Error();
     });
@@ -448,25 +450,25 @@ describe("handle", () => {
     });
     return expect(authenticator.handle(getCloudfrontRequest()))
       .resolves.toEqual({
-        status: "302",
+        status: '302',
         headers: {
           location: [
             {
-              key: "Location",
+              key: 'Location',
               value:
-                "https://my-cognito-domain.auth.us-east-1.amazoncognito.com/authorize?redirect_uri=https://d111111abcdef8.cloudfront.net&response_type=code&client_id=123456789qwertyuiop987abcd&state=/lol%3Fparam%3D1",
+                'https://my-cognito-domain.auth.us-east-1.amazoncognito.com/authorize?redirect_uri=https://d111111abcdef8.cloudfront.net&response_type=code&client_id=123456789qwertyuiop987abcd&state=/lol%3Fparam%3D1',
             },
           ],
-          "cache-control": [
+          'cache-control': [
             {
-              key: "Cache-Control",
-              value: "no-cache, no-store, max-age=0, must-revalidate",
+              key: 'Cache-Control',
+              value: 'no-cache, no-store, max-age=0, must-revalidate',
             },
           ],
           pragma: [
             {
-              key: "Pragma",
-              value: "no-cache",
+              key: 'Pragma',
+              value: 'no-cache',
             },
           ],
         },
@@ -607,11 +609,11 @@ describe("createApiGatewayAuthenticator", () => {
     jest.spyOn(authenticator._jwtVerifier, "verify");
   });
 
-  test("should reject invalid id token", async () => {
+  test("should reject invalid id token in cookie", async () => {
     const event = {
       cookies: [
-        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=eyJz9sdfsdfsdfsd;",
-        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=aaabbccc;",
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=${tokenData.id_token};`,
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=${tokenData.refresh_token};`,
       ],
     };
 
@@ -621,12 +623,105 @@ describe("createApiGatewayAuthenticator", () => {
       .resolves.toStrictEqual({ isAuthorized: false })
       .then(() => {
         expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
-          "eyJz9sdfsdfsdfsd"
+          tokenData.id_token, {"tokenUse": "id"}
+        );
+      });
+  });
+  
+  test("should allow valid id token in cookie", async () => {
+    const event = {
+      cookies: [
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=${tokenData.id_token};`,
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=${tokenData.refresh_token};`,
+      ],
+    };
+    authenticator._jwtVerifier.verify.mockReturnValue(Promise.resolve());
+    return expect(authenticator.handle(event))
+      .resolves.toStrictEqual({ isAuthorized: true })
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
+          tokenData.id_token, {"tokenUse": "id"}
         );
       });
   });
 
-  test("should reject missing id token", async () => {
+  test("should reject invalid access token in header", async () => {
+    const event = {
+      headers: {
+        "authorization": `Bearer ${tokenData.access_token}`
+      }
+    };
+    authenticator._jwtVerifier.verify.mockReturnValue(Promise.reject());
+    return expect(authenticator.handle(event))
+      .resolves.toStrictEqual({ isAuthorized: false })
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
+          tokenData.access_token, {"tokenUse": "access"}
+        );
+      });
+  });
+
+  test("should allow valid access token in header", async () => {
+    const event = {
+      headers: {
+        "authorization": `Bearer ${tokenData.access_token}`
+      }
+    };
+    authenticator._jwtVerifier.verify.mockReturnValue(Promise.resolve());
+    return expect(authenticator.handle(event))
+      .resolves.toStrictEqual({ isAuthorized: true })
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
+          tokenData.access_token, {"tokenUse": "access"}
+        );
+      });
+  });
+
+  test("should use header token over cookie token", async () => {
+    const event = {
+      headers: {
+        "authorization": `Bearer ${tokenData.access_token}`
+      },
+      cookies: [
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=${tokenData.id_token};`,
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=${tokenData.refresh_token};`,
+      ]
+    };
+    authenticator._jwtVerifier.verify.mockReturnValue(Promise.resolve());
+    return expect(authenticator.handle(event))
+      .resolves.toStrictEqual({ isAuthorized: true })
+      .then(() => {
+        expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
+          tokenData.access_token, {"tokenUse": "access"}
+        );
+      });
+  });
+
+
+  test('should getIdTokenFromCookie', () => {
+    const event = {
+      cookies: [
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=${tokenData.id_token};`,
+        `CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=${tokenData.refresh_token};`,
+      ],
+    };
+    expect(
+      authenticator._getIdTokenFromCookie(event.cookies)
+    ).toBe(tokenData.id_token);
+  });
+
+  test('should getAccessTokenFromAuthHeader', () => {
+    const event = {
+      headers: {
+        "authorization": `Bearer ${tokenData.access_token}`
+      }
+    };
+    expect(
+      authenticator._getAccessTokenFromAuthHeader(event.headers)
+    ).toBe(tokenData.access_token);
+  });
+
+  test("should reject missing tokens", async () => {
     const event = {
       cookies: [
         "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.blahToken=eyJz9sdfsdfsdfsd;",
@@ -642,21 +737,6 @@ describe("createApiGatewayAuthenticator", () => {
         expect(authenticator._jwtVerifier.verify).toBeCalledTimes(0);
       });
   });
-
-  test("should allow valid id token", async () => {
-    const event = {
-      cookies: [
-        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.idToken=eyJz9sdfsdfsdfsd;",
-        "CognitoIdentityServiceProvider.123456789qwertyuiop987abcd.toto.refreshToken=aaabbccc;",
-      ],
-    };
-    authenticator._jwtVerifier.verify.mockReturnValue(Promise.resolve());
-    return expect(authenticator.handle(event))
-      .resolves.toStrictEqual({ isAuthorized: true })
-      .then(() => {
-        expect(authenticator._jwtVerifier.verify).toHaveBeenCalledWith(
-          "eyJz9sdfsdfsdfsd"
-        );
-      });
-  });
 });
+
+
