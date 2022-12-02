@@ -321,16 +321,16 @@ export class CloudFrontUserAuthenticator {
           request.headers.cookie,
           "refreshToken"
         );
-        return this._fetchTokensFromRefresh(refreshToken).then((tokens) =>
-          this._getRedirectResponse({
-            tokens,
-            domain: cfDomain,
-            location:
-              request.querystring > ""
-                ? `${request.uri}?${request.querystring}`
-                : request.uri,
-          })
-        );
+        const tokens = await this._fetchTokensFromRefresh(refreshToken);
+        const redirectResp = await this._getRedirectResponse({
+          tokens,
+          domain: cfDomain,
+          location:
+            request.querystring > ""
+              ? `${request.uri}?${request.querystring}`
+              : request.uri,
+        });
+        return redirectResp;
       }
     } catch (err) {
       this._logger.debug("User isn't authenticated: %s", err);
